@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class StorageBasicTest {
-    Storage storage;
+    private Storage storage;
 
     @Before
     public void setUp() throws Exception {
@@ -47,9 +47,9 @@ public class StorageBasicTest {
                 throw new IOException("Could not completely read file " + file.getName());
             }
             fis.close();
-
+            storage.writeFile(filestream, type);
 //        Assert.assertEquals("a.docx",storage.writeFile(filestream,"a.docx"));
-            System.out.println(storage.writeFile(filestream, type));
+//            System.out.println();
         }
     }
 

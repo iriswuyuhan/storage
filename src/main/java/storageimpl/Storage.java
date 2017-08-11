@@ -24,6 +24,9 @@ public class Storage {
 
     private double a=0.5;
     private double b=0.5;
+
+    private long totalSpace=0;
+    private long totalNum=0;
     /**
      *
      * @throws IOException
@@ -107,14 +110,15 @@ public class Storage {
 
         long space=dirSpace.get(itr)-length;
         dirSpace.set(itr,space);
+        totalSpace+=space;
 
         long num=fileNum.get(itr)-1;
         fileNum.set(itr,num);
+        totalNum+=num;
 
         File file=dirs.get(itr);
 
         String path=file.getAbsolutePath();
-        System.out.println(path);
         OutputStream os=new FileOutputStream(path+"\\"+fileNum.get(itr)+"."+fileType);
         InputStream is=new ByteArrayInputStream(filestream);
         byte[] buffer=new byte[1024];
@@ -130,18 +134,48 @@ public class Storage {
     private int findBest(long volume){
         int winner=0;
         double mark=0.0;
+        long average=0;
+
+        if(totalNum>0){
+            average=totalSpace/totalNum;
+        }
+
+        boolean big=false;
+        if(volume>=average){
+            big=true;
+        }
 
         //这里可以改为下次匹配策略
+        //TODO:这里需要做代码优化
         for(int i=0;i<dirSpace.size();i++){
-            if(volume<=dirSpace.get(i)){
-                double markTemp=dirSpace.get(i)/(double)FIRST_MAX_NUM_OF_FILE;
-                markTemp=a*markTemp+b*fileNum.get(i);
+            if(volume<=dirSpace.get(i)&&fileNum.get(i)!=0){
+                //剩余空间
+                double markTemp=getSpaceMark(big,i)+getNumMark(big,i);
                 if(markTemp>mark) {
                     winner = i;
                     mark=markTemp;
                 }
             }
         }
+        System.out.println(volume+"进入"+winner);
         return winner;
+    }
+
+    private double getSpaceMark(boolean big,int i){
+        if(big){
+            return (a-0.3)*(FIRST_MAX_DIR_SPACE-dirSpace.get(i))/(double)FIRST_MAX_NUM_OF_FILE;
+        }
+        else{
+            return (a+0.3)*(dirSpace.get(i)/(double)FIRST_MAX_NUM_OF_FILE);
+        }
+    }
+
+    private double getNumMark(boolean big,int i){
+        if(big){
+            return (b+0.3)*(FIRST_MAX_NUM_OF_FILE-fileNum.get(i));
+        }
+        else{
+            return (b-0.3)*fileNum.get(i);
+        }
     }
 }
