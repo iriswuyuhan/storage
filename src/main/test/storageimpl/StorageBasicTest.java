@@ -27,24 +27,30 @@ public class StorageBasicTest {
 
     @Test
     public void writeFile() throws Exception {
-        File file=new File("D:\\lalala.docx");
-        FileInputStream fis=new FileInputStream(file);
-        long size=file.length();
-        byte[] filestream=new byte[(int)size];
-        int offset=0;
-        int numRead=0;
-        while (offset<size
-                &&(numRead=fis.read(filestream,offset,filestream.length-offset))>=0){
-            offset+=numRead;
-        }
+        File dir = new File("D:\\test");
+        File[] files=dir.listFiles();
 
-        if(offset!=filestream.length){
-            throw new IOException("Could not completely read file "+file.getName());
-        }
-        fis.close();
+        for(File file:files) {
+            String type=file.getName().substring(file.getName().lastIndexOf(".")+1);
+//            System.out.println(name);
+            FileInputStream fis = new FileInputStream(file);
+            long size = file.length();
+            byte[] filestream = new byte[(int) size];
+            int offset = 0;
+            int numRead = 0;
+            while (offset < size
+                    && (numRead = fis.read(filestream, offset, filestream.length - offset)) >= 0) {
+                offset += numRead;
+            }
+
+            if (offset != filestream.length) {
+                throw new IOException("Could not completely read file " + file.getName());
+            }
+            fis.close();
 
 //        Assert.assertEquals("a.docx",storage.writeFile(filestream,"a.docx"));
-        System.out.println(storage.writeFile(filestream,"docx"));
+            System.out.println(storage.writeFile(filestream, type));
+        }
     }
 
     @After
