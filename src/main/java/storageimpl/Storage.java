@@ -123,7 +123,7 @@ public class Storage {
         Map<Integer,Long> proSpace=new HashMap<Integer, Long>();
 
         for(Long s:dirSpace){
-            
+
         }
         return 0;
     }
