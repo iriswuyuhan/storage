@@ -8,7 +8,7 @@ import java.util.List;
  * @author wuyuhan
  */
 
-//TODO：并发处理
+//TODO：(1)并发处理(2)文件夹空间上限和文件数目上限
 public class Storage {
     private static Storage storage;
 
@@ -21,12 +21,16 @@ public class Storage {
     private int numOfDirectories;
     private List<Long> dirSpace;
     private List<Long> fileNum;
+    private int index;
 
     private double a=0.5;
     private double b=0.5;
 
     private long totalSpace=0;
     private long totalNum=0;
+
+    private long bigLimit;
+    private long smallLimit;
     /**
      *
      * @throws IOException
@@ -47,6 +51,12 @@ public class Storage {
             dirSpace.add(FIRST_MAX_DIR_SPACE);
             fileNum.add(FIRST_MAX_NUM_OF_FILE);
         }
+
+        //TODO 这里还要增加可修改性
+        bigLimit=102000;
+        smallLimit=15300;
+
+        index=0;
     }
 
     /**
@@ -130,52 +140,91 @@ public class Storage {
     }
 
     //怎么判定什么是最佳方案呢？
-    //TODO：这里应该有判断最佳文件夹的方法
+    //TODO：这里需要优化
     private int findBest(long volume){
-        int winner=0;
-        double mark=0.0;
-        long average=0;
-
-        if(totalNum>0){
-            average=totalSpace/totalNum;
-        }
 
         boolean big=false;
-        if(volume>=average){
+        boolean small=false;
+
+        boolean putin=false;
+
+        if(volume>bigLimit){
             big=true;
         }
+        if(volume<smallLimit){
+            small=true;
+        }
 
+        int winner=getWinner(big,small,volume);
+        if(winner<0){
+            initial();
+            getWinner(big,small,volume);
+        }
+//        System.out.println(volume+"进入"+winner);
+        return winner;
+    }
+
+    private int getWinner(boolean big,boolean small,long volume){
         //这里可以改为下次匹配策略
         //TODO:这里需要做代码优化
-        for(int i=0;i<dirSpace.size();i++){
+        int winner=0;
+        double mark=0.0;
+        boolean putin=false;
+
+        for(int i=index;i<dirSpace.size();i++){
             if(volume<=dirSpace.get(i)&&fileNum.get(i)!=0){
                 //剩余空间
-                double markTemp=getSpaceMark(big,i)+getNumMark(big,i);
+                double markTemp=getSpaceMark(big,small,i)+getNumMark(big,small,i);
                 if(markTemp>mark) {
                     winner = i;
                     mark=markTemp;
                 }
+                putin=true;
             }
         }
-        System.out.println(volume+"进入"+winner);
-        return winner;
+        if(putin) {
+            return winner;
+        }
+        return -1;
     }
 
-    private double getSpaceMark(boolean big,int i){
+    //TODO 参数可能有点问题？？？
+    private double getSpaceMark(boolean big,boolean small,int i){
         if(big){
             return (a-0.3)*(FIRST_MAX_DIR_SPACE-dirSpace.get(i))/(double)FIRST_MAX_NUM_OF_FILE;
         }
-        else{
+        else if(small){
             return (a+0.3)*(dirSpace.get(i)/(double)FIRST_MAX_NUM_OF_FILE);
+        }
+        else{
+            return a*(dirSpace.get(i)/(double)FIRST_MAX_NUM_OF_FILE);
         }
     }
 
-    private double getNumMark(boolean big,int i){
+    private double getNumMark(boolean big,boolean small,int i){
         if(big){
             return (b+0.3)*(FIRST_MAX_NUM_OF_FILE-fileNum.get(i));
         }
-        else{
+        else if(small){
             return (b-0.3)*fileNum.get(i);
         }
+        else{
+            return b*fileNum.get(i);
+        }
+    }
+
+    //TODO （1）要避免代码重复（2）考虑新增一部分也满了的情况
+    private void initial(){
+        for(int i=index+BASIC_NUM_OF_DIRECTORIES;i<index+2*BASIC_NUM_OF_DIRECTORIES;i++){
+            File temp=new File("DIR_"+i);
+            if(!temp.exists()){
+                temp.mkdirs();
+            }
+
+            dirs.add(temp);
+            dirSpace.add(FIRST_MAX_DIR_SPACE);
+            fileNum.add(FIRST_MAX_NUM_OF_FILE);
+        }
+        index=BASIC_NUM_OF_DIRECTORIES;
     }
 }

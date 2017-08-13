@@ -30,9 +30,10 @@ public class StorageBasicTest {
         File dir = new File("D:\\test");
         File[] files=dir.listFiles();
 
+        System.out.print("[");
         for(File file:files) {
             String type=file.getName().substring(file.getName().lastIndexOf(".")+1);
-//            System.out.println(name);
+            System.out.print(file.length()+",");
             FileInputStream fis = new FileInputStream(file);
             long size = file.length();
             byte[] filestream = new byte[(int) size];
@@ -46,11 +47,13 @@ public class StorageBasicTest {
             if (offset != filestream.length) {
                 throw new IOException("Could not completely read file " + file.getName());
             }
+
             fis.close();
             storage.writeFile(filestream, type);
 //        Assert.assertEquals("a.docx",storage.writeFile(filestream,"a.docx"));
 //            System.out.println();
         }
+        System.out.print("]");
     }
 
     @After
