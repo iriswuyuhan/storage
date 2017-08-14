@@ -1,6 +1,8 @@
 package storageimpl;
 
+import storageexception.MyException;
 import storageservice.StorageService;
+import util.MyErrorCode;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -98,7 +100,7 @@ public class Storage implements StorageService{
             }
 
             if(offset!=filestream.length){
-                throw new IOException("Could not completely read file "+file.getName());
+                throw new MyException(MyErrorCode.READIOEXCEPTION);
             }
             fis.close();
 
@@ -139,6 +141,14 @@ public class Storage implements StorageService{
             os.write(buffer,0,len);
         }
         return path+fileNum.get(itr)+"."+fileType;
+    }
+
+    public String[] writeFile(byte[][] filesStream, String[] fileType) throws IOException {
+        String[] paths=new String[fileType.length];
+        for(int i=0;i<fileType.length;i++){
+            paths[i]=writeFile(filesStream[i],fileType[i]);
+        }
+        return paths;
     }
 
     //怎么判定什么是最佳方案呢？
