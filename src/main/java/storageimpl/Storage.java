@@ -1,5 +1,7 @@
 package storageimpl;
 
+import storageservice.StorageService;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,16 +11,16 @@ import java.util.List;
  */
 
 //TODO：(1)并发处理(2)文件夹空间上限和文件数目上限
-public class Storage {
+public class Storage implements StorageService{
     private static Storage storage;
 
-    private final int BASIC_NUM_OF_DIRECTORIES=3;
-    private final long FIRST_MAX_DIR_SPACE=new Long("4294967296");//2^32-1
-    private final long FIRST_MAX_NUM_OF_FILE=new Long("65536");//2^16-1
+    private final static int BASIC_NUM_OF_DIRECTORIES=3;
+    private final static long FIRST_MAX_DIR_SPACE=new Long("4294967295");//2^32-1=4294967295
+    private final static long FIRST_MAX_NUM_OF_FILE=new Long("65535");//2^16-1=65535
 
-    public List<File> dirs=new ArrayList<File>();
+    private List<File> dirs=new ArrayList<File>();
 
-    private int numOfDirectories;
+    private int numOfDirectories;//在转型时可能会用到
     private List<Long> dirSpace;
     private List<Long> fileNum;
     private int index;
@@ -114,7 +116,7 @@ public class Storage {
      */
     //让我们先假设是byte[]好了
     //TODO：处理Exception
-    String writeFile(byte[] filestream, String fileType) throws IOException {
+    public String writeFile(byte[] filestream, String fileType) throws IOException {
         long length=filestream.length;
         int itr=findBest(length);
 
@@ -158,7 +160,7 @@ public class Storage {
         int winner=getWinner(big,small,volume);
         if(winner<0){
             initial();
-            getWinner(big,small,volume);
+            winner=getWinner(big,small,volume);
         }
 //        System.out.println(volume+"进入"+winner);
         return winner;
@@ -167,25 +169,23 @@ public class Storage {
     private int getWinner(boolean big,boolean small,long volume){
         //这里可以改为下次匹配策略
         //TODO:这里需要做代码优化
-        int winner=0;
+        int winner=-1;
         double mark=0.0;
-        boolean putin=false;
 
-        for(int i=index;i<dirSpace.size();i++){
-            if(volume<=dirSpace.get(i)&&fileNum.get(i)!=0){
+        for(int i=index;i<index+BASIC_NUM_OF_DIRECTORIES;i++){
+//            if(index==3){
+//                System.out.println(mark);
+//            }
+            if(volume<=dirSpace.get(i)&&fileNum.get(i)>0){
                 //剩余空间
                 double markTemp=getSpaceMark(big,small,i)+getNumMark(big,small,i);
-                if(markTemp>mark) {
+                if(markTemp>=mark) {
                     winner = i;
                     mark=markTemp;
                 }
-                putin=true;
             }
         }
-        if(putin) {
-            return winner;
-        }
-        return -1;
+        return winner;
     }
 
     //TODO 参数可能有点问题？？？
@@ -197,7 +197,7 @@ public class Storage {
             return (a+0.3)*(dirSpace.get(i)/(double)FIRST_MAX_NUM_OF_FILE);
         }
         else{
-            return a*(dirSpace.get(i)/(double)FIRST_MAX_NUM_OF_FILE);
+            return 0;
         }
     }
 
@@ -209,7 +209,7 @@ public class Storage {
             return (b-0.3)*fileNum.get(i);
         }
         else{
-            return b*fileNum.get(i);
+            return fileNum.get(i);
         }
     }
 
@@ -225,6 +225,6 @@ public class Storage {
             dirSpace.add(FIRST_MAX_DIR_SPACE);
             fileNum.add(FIRST_MAX_NUM_OF_FILE);
         }
-        index=BASIC_NUM_OF_DIRECTORIES;
+        this.index=this.index+BASIC_NUM_OF_DIRECTORIES;
     }
 }

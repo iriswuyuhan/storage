@@ -20,7 +20,7 @@ public class StorageBasicTest {
 
     @Test
     public void getFile() throws Exception {
-//        byte[] filestream=storage.getFile("a.txt");
+//        byte[] filestream=storage.getFile("65535.txt");
 //        String content=new String(filestream);
 //        Assert.assertEquals("ievrn",content);
     }
@@ -30,10 +30,8 @@ public class StorageBasicTest {
         File dir = new File("D:\\test");
         File[] files=dir.listFiles();
 
-        System.out.print("[");
         for(File file:files) {
             String type=file.getName().substring(file.getName().lastIndexOf(".")+1);
-            System.out.print(file.length()+",");
             FileInputStream fis = new FileInputStream(file);
             long size = file.length();
             byte[] filestream = new byte[(int) size];
@@ -50,10 +48,7 @@ public class StorageBasicTest {
 
             fis.close();
             storage.writeFile(filestream, type);
-//        Assert.assertEquals("a.docx",storage.writeFile(filestream,"a.docx"));
-//            System.out.println();
         }
-        System.out.print("]");
     }
 
     @After
