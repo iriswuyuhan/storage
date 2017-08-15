@@ -9,6 +9,7 @@ import util.DocType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -18,11 +19,6 @@ public class StorageBasicTest {
     @Before
     public void setUp() throws Exception {
         storage=Storage.getInstance();
-    }
-
-    @Test
-    public void getFile() throws Exception {
-
     }
 
     @Test
@@ -67,20 +63,47 @@ public class StorageBasicTest {
 //            fis.close();
 //            storage.writeFile(filestream, type);
 //        }
+        byte a=49;
 
+        long startTime=System.currentTimeMillis();
         Random r=new Random();
-        for(int i=0;i<50000;i++){
-            int length=(int)r.nextDouble()*1024*1024;
+        for(int i=0;i<10000;i++){
+            int length=r.nextInt(1024*1024*2);
+//            int length=7687078;
+//            System.out.println(length);
             byte[] file=new byte[length];
-            storage.writeFile(file,DocType.pdf);
+            Arrays.fill(file,a);
+            storage.writeFile(file,DocType.txt);
         }
+        long endTime=System.currentTimeMillis();
+        System.out.println("写入10000个文件耗时："+(endTime-startTime)+"ms");
+    }
+
+    @Test
+    public void getFile() throws Exception {
+        String basicPath="E:\\DIR_";
+        Random r=new Random();
+        long total=0;
+        int itr=0;
+        for(int i=0;i<100;i++){
+            itr=r.nextInt(20);
+            File[] files=Storage.dirs.get(itr).listFiles();
+            itr=r.nextInt(files.length);
+            String path=files[itr].getAbsolutePath();
+            long start=System.currentTimeMillis();
+            storage.getFile(path);
+            long end=System.currentTimeMillis();
+            total+=end-start;
+        }
+        double average=total/100.0;
+        System.out.println("spend "+average+"ms reading 100 files");
     }
 
     @After
     public void tearDown() throws Exception {
-        for(File dir:Storage.dirs){
-            fileDelete(dir);
-        }
+//        for(File dir:Storage.dirs){
+//            fileDelete(dir);
+//        }
     }
 
     private boolean fileDelete(File dir){

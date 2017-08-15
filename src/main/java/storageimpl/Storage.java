@@ -43,8 +43,8 @@ public class Storage implements StorageService{
             createDir(i);
         }
 
-        bigLimit=102000;
-        smallLimit=15300;
+        bigLimit=1024*1024;
+        smallLimit=340*1024;
 
         index=0;
     }
@@ -161,7 +161,7 @@ public class Storage implements StorageService{
         if(volume>bigLimit){
             big=true;
         }
-        if(volume<smallLimit){
+        else if(volume<smallLimit){
             small=true;
         }
 
@@ -169,6 +169,9 @@ public class Storage implements StorageService{
         if(winner<0){
             initial();
             winner=getWinner(big,small,volume);
+        }
+        if(winner<0){
+            throw new MyException(MyErrorCode.WRITEFILETOOBIG);
         }
 //        System.out.println(volume+"进入"+winner);
         return winner;
@@ -184,6 +187,7 @@ public class Storage implements StorageService{
         int winner=-1;
         double mark=0.0;
 
+        //TODO：这里写得有点问题，还是应该用i=0开始
         for(int i=index;i<index+BASIC_NUM_OF_DIRECTORIES;i++){
 //            if(index==3){
 //                System.out.println(mark);
@@ -208,10 +212,10 @@ public class Storage implements StorageService{
      */
     private double getSpaceMark(boolean big,boolean small,int i){
         if(big){
-            return (a-0.3)*(FIRST_MAX_DIR_SPACE-dirSpace.get(i))/(double)FIRST_MAX_NUM_OF_FILE;
+            return (a-0.3)*dirSpace.get(i)/(double)FIRST_MAX_NUM_OF_FILE;
         }
         else if(small){
-            return (a+0.3)*(dirSpace.get(i)/(double)FIRST_MAX_NUM_OF_FILE);
+            return (a+0.3)*((FIRST_MAX_DIR_SPACE-dirSpace.get(i))/(double)FIRST_MAX_NUM_OF_FILE);
         }
         else{
             return 0;
@@ -251,7 +255,7 @@ public class Storage implements StorageService{
      * @param i 某文件夹的index
      */
     private static void createDir(int i){
-        File temp=new File("DIR_"+i);
+        File temp=new File("E:\\DIR_"+i);
         if(!temp.exists()){
             temp.mkdirs();
         }

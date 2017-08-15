@@ -1,15 +1,13 @@
 package util;
 
 public enum MyErrorCode {
-    WRITEFILENOTFOUND("WRITE01","找不到文件路径"),
-    WRITEIOEXCEPTION("WRITE02","写文件IOEXCEPTION"),
-    READFILENOTFOUND("READ01","找不到文件路径"),
-    READIOEXCEPTION("READ02","无法读完文件");
+    WRITEFILETOOBIG("WRITE01","文件过大"),
+    READIOEXCEPTION("READ01","无法读完文件");
 
     private String value;
     private String desc;
 
-    private MyErrorCode(String value,String desc){
+    MyErrorCode(String value, String desc){
         this.setValue(value);
         this.setDesc(desc);
     }
@@ -32,6 +30,6 @@ public enum MyErrorCode {
 
     @Override
     public String toString(){
-        return "["+this.value+this.desc;
+        return "["+this.value+":"+this.desc+"]";
     }
 }
