@@ -137,20 +137,6 @@ public class Storage implements StorageService{
     }
 
     /**
-     * @param filesStream 字节二维数组（多文件上传）
-     * @param fileType 文件种类（enum）数组
-     * @return 路径数组
-     * @throws IOException 文件找不到或无法打开、写入
-     */
-    public String[] writeFile(byte[][] filesStream, DocType[] fileType) throws IOException {
-        String[] paths=new String[fileType.length];
-        for(int i=0;i<fileType.length;i++){
-            paths[i]=writeFile(filesStream[i],fileType[i]);
-        }
-        return paths;
-    }
-
-    /**
      * @param volume 文件长度
      * @return 最佳文件夹的index
      */
@@ -188,7 +174,7 @@ public class Storage implements StorageService{
         double mark=0.0;
 
         //TODO：这里写得有点问题，还是应该用i=0开始
-        for(int i=index;i<index+BASIC_NUM_OF_DIRECTORIES;i++){
+        for(int i=0;i<numOfDirectories;i++){
 //            if(index==3){
 //                System.out.println(mark);
 //            }
@@ -244,10 +230,11 @@ public class Storage implements StorageService{
      * 当前文件夹全部填满时新建一定数量的文件夹
      */
     private void initial(){
-        for(int i=index+BASIC_NUM_OF_DIRECTORIES;i<index+2*BASIC_NUM_OF_DIRECTORIES;i++){
+        this.index+=BASIC_NUM_OF_DIRECTORIES;
+        for(int i=index;i<index+BASIC_NUM_OF_DIRECTORIES;i++){
             createDir(i);
         }
-        this.index=this.index+BASIC_NUM_OF_DIRECTORIES;
+        this.numOfDirectories+=BASIC_NUM_OF_DIRECTORIES;
     }
 
     /**

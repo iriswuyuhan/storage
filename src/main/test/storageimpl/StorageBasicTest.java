@@ -22,7 +22,7 @@ public class StorageBasicTest {
     }
 
     @Test
-    public void writeFile() throws Exception {
+    public void writeFile1() throws Exception {
 //        File file=new File("D:\\a.txt");
 //        FileInputStream fis = new FileInputStream(file);
 //        long size = file.length();
@@ -41,28 +41,6 @@ public class StorageBasicTest {
 //        fis.close();
 //        storage.writeFile(filestream, DocType.txt);
 
-//        File dir = new File("D:\\test");
-//        File[] files=dir.listFiles();
-
-//        for(File file:files) {
-//            String type=file.getName().substring(file.getName().lastIndexOf(".")+1);
-//            FileInputStream fis = new FileInputStream(file);
-//            long size = file.length();
-//            byte[] filestream = new byte[(int) size];
-//            int offset = 0;
-//            int numRead = 0;
-//            while (offset < size
-//                    && (numRead = fis.read(filestream, offset, filestream.length - offset)) >= 0) {
-//                offset += numRead;
-//            }
-//
-//            if (offset != filestream.length) {
-//                throw new IOException("Could not completely read file " + file.getName());
-//            }
-//
-//            fis.close();
-//            storage.writeFile(filestream, type);
-//        }
         byte a=49;
 
         long startTime=System.currentTimeMillis();
@@ -80,7 +58,33 @@ public class StorageBasicTest {
     }
 
     @Test
-    public void getFile() throws Exception {
+    public void writeFile2() throws Exception{
+        File dir = new File("D:\\test");
+        File[] files=dir.listFiles();
+
+        for(File file:files) {
+            String type=file.getName().substring(file.getName().lastIndexOf(".")+1);
+            FileInputStream fis = new FileInputStream(file);
+            long size = file.length();
+            byte[] filestream = new byte[(int) size];
+            int offset = 0;
+            int numRead = 0;
+            while (offset < size
+                    && (numRead = fis.read(filestream, offset, filestream.length - offset)) >= 0) {
+                offset += numRead;
+            }
+
+            if (offset != filestream.length) {
+                throw new IOException("Could not completely read file " + file.getName());
+            }
+
+            fis.close();
+            storage.writeFile(filestream, DocType.valueOf(type));
+        }
+    }
+
+    @Test
+    public void getFile1() throws Exception {
         String basicPath="E:\\DIR_";
         Random r=new Random();
         long total=0;
@@ -101,9 +105,9 @@ public class StorageBasicTest {
 
     @After
     public void tearDown() throws Exception {
-//        for(File dir:Storage.dirs){
-//            fileDelete(dir);
-//        }
+        for(File dir:Storage.dirs){
+            fileDelete(dir);
+        }
     }
 
     private boolean fileDelete(File dir){
