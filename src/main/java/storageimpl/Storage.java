@@ -4,6 +4,7 @@ import storageexception.MyException;
 import storageservice.StorageService;
 import util.DocType;
 import util.MyErrorCode;
+import util.PropertyReader;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -17,9 +18,11 @@ import java.util.List;
 public class Storage implements StorageService{
     private static Storage storage;
 
-    private final static int BASIC_NUM_OF_DIRECTORIES=20;
-    private final static long FIRST_MAX_DIR_SPACE=new Long("4294967295");//2^32-1=4294967295
-    private final static long FIRST_MAX_NUM_OF_FILE=new Long("65535");//2^16-1=65535
+    private static int BASIC_NUM_OF_DIRECTORIES;
+    private static long FIRST_MAX_DIR_SPACE;//2^32-1=4294967295
+    private static long FIRST_MAX_NUM_OF_FILE;//2^16-1=65535
+
+    private static String rootPath;
 
     static List<File> dirs=new ArrayList<File>();
 
@@ -28,13 +31,21 @@ public class Storage implements StorageService{
     private static List<Long> fileNum;
     private int index;
 
-    private double a=0.5;
-    private double b=0.5;
+    private double a;
+    private double b;
 
     private long bigLimit;
     private long smallLimit;
 
     private Storage(){
+        PropertyReader pr=new PropertyReader();
+
+        rootPath=pr.getProperty("root_path");
+
+        BASIC_NUM_OF_DIRECTORIES=Integer.parseInt(pr.getProperty("basic_num_of_dirs"));
+        FIRST_MAX_DIR_SPACE=Long.parseLong(pr.getProperty("max_space"));
+        FIRST_MAX_NUM_OF_FILE=Long.parseLong(pr.getProperty("max_num"));
+
         numOfDirectories=BASIC_NUM_OF_DIRECTORIES;
         dirSpace=new ArrayList<Long>();
         fileNum=new ArrayList<Long>();
@@ -43,8 +54,11 @@ public class Storage implements StorageService{
             createDir(i);
         }
 
-        bigLimit=1024*1024;
-        smallLimit=340*1024;
+        bigLimit=Long.parseLong(pr.getProperty("big_limit"));
+        smallLimit=Long.parseLong(pr.getProperty("small_limit"));
+
+        a=Double.parseDouble(pr.getProperty("space_weight"));
+        b=Double.parseDouble(pr.getProperty("num_weight"));
 
         index=0;
     }
@@ -110,18 +124,15 @@ public class Storage implements StorageService{
      * @return 文件路径
      * @throws IOException 文件找不到或无法打开、写入
      */
-    //让我们先假设是byte[]好了
     public String writeFile(byte[] filestream, DocType fileType) throws IOException {
         long length=filestream.length;
         int itr=findBest(length);
 
         long space=dirSpace.get(itr)-length;
         dirSpace.set(itr,space);
-//        totalSpace+=space;
 
         long num=fileNum.get(itr)-1;
         fileNum.set(itr,num);
-//        totalNum+=num;
 
         File file=dirs.get(itr);
 
@@ -159,7 +170,7 @@ public class Storage implements StorageService{
         if(winner<0){
             throw new MyException(MyErrorCode.WRITEFILETOOBIG);
         }
-//        System.out.println(volume+"进入"+winner);
+
         return winner;
     }
 
@@ -173,11 +184,7 @@ public class Storage implements StorageService{
         int winner=-1;
         double mark=0.0;
 
-        //TODO：这里写得有点问题，还是应该用i=0开始
         for(int i=0;i<numOfDirectories;i++){
-//            if(index==3){
-//                System.out.println(mark);
-//            }
             if(volume<=dirSpace.get(i)&&fileNum.get(i)>0){
                 //剩余空间
                 double markTemp=getSpaceMark(big,small,i)+getNumMark(big,small,i);
@@ -242,7 +249,7 @@ public class Storage implements StorageService{
      * @param i 某文件夹的index
      */
     private static void createDir(int i){
-        File temp=new File("E:\\DIR_"+i);
+        File temp=new File(rootPath+"DIR_"+i);
         if(!temp.exists()){
             temp.mkdirs();
         }
