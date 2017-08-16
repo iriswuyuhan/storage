@@ -1,7 +1,6 @@
 package storageimpl;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import util.DocType;
@@ -10,7 +9,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 public class StorageBasicTest {
@@ -29,8 +27,6 @@ public class StorageBasicTest {
         Random r=new Random();
         for(int i=0;i<10000;i++){
             int length=r.nextInt(1024*1024*2);
-//            int length=7687078;
-//            System.out.println(length);
             byte[] file=new byte[length];
             Arrays.fill(file,a);
             storage.writeFile(file,DocType.txt);
