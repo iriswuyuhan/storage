@@ -14,7 +14,6 @@ import java.util.List;
  * 实现文件存储
  * @author wuyuhan
  */
-
 public class Storage implements StorageService{
     private static Storage storage;
 
@@ -63,11 +62,6 @@ public class Storage implements StorageService{
         b=Double.parseDouble(pr.getProperty("num_weight"));
 
         index=0;
-
-        System.out.println("BASIC_NUM_OF_DIRECTORIES:"+BASIC_NUM_OF_DIRECTORIES);
-        System.out.println("FIRST_MAX_DIR_SPACE:"+FIRST_MAX_DIR_SPACE);
-        System.out.println("bigLimit:"+bigLimit);
-        System.out.println("a:"+a);
     }
 
     /**
@@ -97,41 +91,48 @@ public class Storage implements StorageService{
     /**
      * @param path 文件路径
      * @return 字节数组，文件过大返回null
-     * @throws IOException 文件找不到或无法打开、写入;MyException 文件没有完全读完
      */
-    public byte[] getFile(String path) throws IOException {
+    public byte[] getFile(String path) {
         File file=new File(path);
         long length=file.length();
 
-        if(length<Integer.MAX_VALUE) {
-            byte[] filestream = new byte[(int) length];
+        try {
+            if(length<Integer.MAX_VALUE) {
+                byte[] filestream = new byte[(int) length];
 
-            FileInputStream fis=new FileInputStream(file);
-            int offset=0;
-            int numRead=0;
+                FileInputStream fis = new FileInputStream(file);
+                int offset = 0;
+                int numRead = 0;
 
-            while(offset<length
-                    &&(numRead=fis.read(filestream,offset,filestream.length-offset))>=0){
-                offset+=numRead;
+                while (offset < length
+                        && (numRead = fis.read(filestream, offset, filestream.length - offset)) >= 0) {
+                    offset += numRead;
+                }
+
+                if (offset != filestream.length) {
+                    throw new MyException(MyErrorCode.READIOEXCEPTION);
+                }
+                fis.close();
+
+                return filestream;
+            }else {
+                throw new MyException(MyErrorCode.READFILETOOBIG);
             }
-
-            if(offset!=filestream.length){
-                throw new MyException(MyErrorCode.READIOEXCEPTION);
-            }
-            fis.close();
-
-            return filestream;
+        }catch (IOException ioe) {
+            ioe.printStackTrace();
+            return null;
+        }catch (MyException me){
+            me.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     /**
      * @param filestream 字节数组
      * @param fileType 文件种类（enum）
      * @return 文件路径
-     * @throws IOException 文件找不到或无法打开、写入
      */
-    public String writeFile(byte[] filestream, DocType fileType) throws IOException {
+    public String writeFile(byte[] filestream, DocType fileType){
         long length=filestream.length;
         int itr=findBest(length);
 
@@ -144,14 +145,19 @@ public class Storage implements StorageService{
         File file=dirs.get(itr);
 
         String path=file.getAbsolutePath();
-        OutputStream os=new FileOutputStream(path+"\\"+fileNum.get(itr)+"."+fileType.toString());
-        InputStream is=new ByteArrayInputStream(filestream);
-        byte[] buffer=new byte[1024];
-        int len=0;
-        while ((len=is.read(buffer))!=-1){
-            os.write(buffer,0,len);
+        try {
+            OutputStream os = new FileOutputStream(path + "\\" + fileNum.get(itr) + "." + fileType.toString());
+            InputStream is = new ByteArrayInputStream(filestream);
+            byte[] buffer = new byte[1024];
+            int len = 0;
+            while ((len = is.read(buffer)) != -1) {
+                os.write(buffer, 0, len);
+            }
+            return path + fileNum.get(itr) + "." + fileType.toString();
+        }catch (IOException ioe) {
+            ioe.printStackTrace();
+            return null;
         }
-        return path+fileNum.get(itr)+"."+fileType.toString();
     }
 
     /**

@@ -5,7 +5,6 @@ import storageservice.StorageService;
 import java.io.IOException;
 
 public class Main {
-    //TODO:exceptions
     public static void main(String[] args) {
         try {
             StorageFactory storageFactory = StorageFactory.getInstance();

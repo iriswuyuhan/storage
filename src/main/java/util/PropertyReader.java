@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class PropertyReader {
+    //TODO:make path reusable
     private final String path="src/main/resources/config.properties";
     private Properties properties;
 
@@ -12,7 +13,6 @@ public class PropertyReader {
         properties=new Properties();
 
         try{
-            //TODO:insert exceptions
             FileInputStream is=new FileInputStream(path);
             properties.load(is);
         }catch (IOException ioe){

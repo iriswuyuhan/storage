@@ -1,8 +1,9 @@
 package util;
 
 public enum MyErrorCode {
-    WRITEFILETOOBIG("WRITE01","文件过大"),
-    READIOEXCEPTION("READ01","无法读完文件");
+    WRITEFILETOOBIG("WRITE01","文件过大，无法写入"),
+    READIOEXCEPTION("READ01","无法读完文件"),
+    READFILETOOBIG("READ02","文件过大，无法读取");
 
     private String value;
     private String desc;
