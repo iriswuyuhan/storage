@@ -23,24 +23,6 @@ public class StorageBasicTest {
 
     @Test
     public void writeFile1() throws Exception {
-//        File file=new File("D:\\a.txt");
-//        FileInputStream fis = new FileInputStream(file);
-//        long size = file.length();
-//        byte[] filestream = new byte[(int) size];
-//        int offset = 0;
-//        int numRead = 0;
-//        while (offset < size
-//                && (numRead = fis.read(filestream, offset, filestream.length - offset)) >= 0) {
-//            offset += numRead;
-//        }
-//
-//        if (offset != filestream.length) {
-//            throw new IOException("Could not completely read file " + file.getName());
-//        }
-//
-//        fis.close();
-//        storage.writeFile(filestream, DocType.txt);
-
         byte a=49;
 
         long startTime=System.currentTimeMillis();
