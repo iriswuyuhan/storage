@@ -26,9 +26,11 @@ public class Storage implements StorageService{
 
     static List<File> dirs=new ArrayList<File>();
 
-    private int numOfDirectories;//在转型时可能会用到
+
     private static List<Long> dirSpace;
     private static List<Long> fileNum;
+
+    private int numOfDirectories;//在转型时可能会用到
     private int index;
 
     private double a;
@@ -61,6 +63,11 @@ public class Storage implements StorageService{
         b=Double.parseDouble(pr.getProperty("num_weight"));
 
         index=0;
+
+        System.out.println("BASIC_NUM_OF_DIRECTORIES:"+BASIC_NUM_OF_DIRECTORIES);
+        System.out.println("FIRST_MAX_DIR_SPACE:"+FIRST_MAX_DIR_SPACE);
+        System.out.println("bigLimit:"+bigLimit);
+        System.out.println("a:"+a);
     }
 
     /**

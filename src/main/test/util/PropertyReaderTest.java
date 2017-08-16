@@ -4,6 +4,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+
 public class PropertyReaderTest {
     private PropertyReader pr;
 
@@ -14,7 +16,7 @@ public class PropertyReaderTest {
 
     @Test
     public void getProperty() throws Exception {
-        Assert.assertEquals("E:\\",pr.getProperty("write_path"));
+        Assert.assertEquals("E:\\",pr.getProperty("root_path"));
     }
 
 }

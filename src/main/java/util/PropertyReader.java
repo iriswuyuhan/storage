@@ -1,17 +1,19 @@
 package util;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 public class PropertyReader {
-    private final String path="config.properties";
-    Properties properties;
+    private final String path="src/main/resources/config.properties";
+    private Properties properties;
 
     public PropertyReader(){
         properties=new Properties();
-        InputStream is=getClass().getResourceAsStream(path);
+
         try{
+            //TODO:insert exceptions
+            FileInputStream is=new FileInputStream(path);
             properties.load(is);
         }catch (IOException ioe){
             ioe.printStackTrace();
