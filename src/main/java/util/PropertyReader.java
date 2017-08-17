@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class PropertyReader {
-    //TODO:make path reusable
-    private final String path="src/main/resources/config.properties";
+    private String path="src/main/resources/config.properties";
     private Properties properties;
 
     public PropertyReader(){
+        String url=PropertyReader.class.getResource("").getPath().replaceAll("%20"," ");
+        System.out.println(PropertyReader.class.getResource("").getPath());
+        path=url.substring(0,url.indexOf("storage"))+"storage/src/main/resources/config.properties";
         properties=new Properties();
 
         try{

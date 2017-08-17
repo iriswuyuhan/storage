@@ -1,2 +1,2 @@
-#使用前请先更改config.properties中的路径，并根据需要更改其它数据
+#使用前请先更改config.properties中的路径，和PropertyReader中的路径，并根据需要更改其它数据
 #具体使用方法参见Main.java
