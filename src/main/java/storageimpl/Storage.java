@@ -39,7 +39,7 @@ public class Storage implements StorageService{
     private long smallLimit;
 
     private Storage(){
-        PropertyReader pr=new PropertyReader();
+        PropertyReader pr=PropertyReader.getInstance();
 
         rootPath=pr.getProperty("root_path");
 

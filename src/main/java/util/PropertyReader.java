@@ -5,12 +5,14 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class PropertyReader {
-    private String path="src/main/resources/config.properties";
+    private static PropertyReader propertyReader;
+
+    private String path;
+
     private Properties properties;
 
-    public PropertyReader(){
+    private PropertyReader(){
         String url=PropertyReader.class.getResource("").getPath().replaceAll("%20"," ");
-        System.out.println(PropertyReader.class.getResource("").getPath());
         path=url.substring(0,url.indexOf("storage"))+"storage/src/main/resources/config.properties";
         properties=new Properties();
 
@@ -20,6 +22,13 @@ public class PropertyReader {
         }catch (IOException ioe){
             ioe.printStackTrace();
         }
+    }
+
+    public static PropertyReader getInstance(){
+        if(propertyReader==null){
+            propertyReader=new PropertyReader();
+        }
+        return propertyReader;
     }
 
     public String getProperty(String key){

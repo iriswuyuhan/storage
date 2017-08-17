@@ -11,7 +11,7 @@ public class PropertyReaderTest {
 
     @Before
     public void setUp() throws Exception {
-        pr=new PropertyReader();
+        pr=PropertyReader.getInstance();
     }
 
     @Test
