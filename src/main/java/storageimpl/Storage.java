@@ -25,7 +25,6 @@ public class Storage implements StorageService{
 
     static List<File> dirs=new ArrayList<File>();
 
-
     private static List<Long> dirSpace;
     private static List<Long> fileNum;
 
@@ -75,96 +74,46 @@ public class Storage implements StorageService{
     }
 
     /**
-     * @param bigLimit 设置大值界限，超过这个值则认为是大文件
+     * @param volume 文件大小
+     * @param fileType 文件种类（enum）
+     * @return 文件路径
      */
-    public void setBigLimit(long bigLimit) {
-        this.bigLimit = bigLimit;
-    }
+    public String createFile(long volume, DocType fileType){
+        int itr=findBest(volume);
 
-    /**
-     * @param smallLimit 设置小值界限，低于这个值则认为是小文件
-     */
-    public void setSmallLimit(long smallLimit) {
-        this.smallLimit = smallLimit;
-    }
+        decreaseSpace(itr,volume);
 
-    /**
-     * @param path 文件路径
-     * @return 字节数组，文件过大返回null
-     */
-    public byte[] getFile(String path) {
-        File file=new File(path);
-        long length=file.length();
+        long name=decreaseFile(itr);
 
-        try {
-            if(length<Integer.MAX_VALUE) {
-                byte[] filestream = new byte[(int) length];
+        File dir=dirs.get(itr);
+        String path=dir.getAbsolutePath();
+        String filePath=path + "\\" + name + "." + fileType.toString();
 
-                FileInputStream fis = new FileInputStream(file);
-                int offset = 0;
-                int numRead = 0;
+        File file=new File(filePath);
 
-                while (offset < length
-                        && (numRead = fis.read(filestream, offset, filestream.length - offset)) >= 0) {
-                    offset += numRead;
-                }
-
-                if (offset != filestream.length) {
-                    throw new MyException(MyErrorCode.READIOEXCEPTION);
-                }
-                fis.close();
-
-                return filestream;
-            }else {
-                throw new MyException(MyErrorCode.READFILETOOBIG);
+        try{
+            if(!file.exists()){
+                file.createNewFile();
             }
-        }catch (IOException ioe) {
+            else{
+                throw new MyException(MyErrorCode.FILEEXISTS);
+            }
+        }catch (IOException ioe){
             ioe.printStackTrace();
             return null;
         }catch (MyException me){
             me.printStackTrace();
             return null;
         }
-    }
 
-    /**
-     * @param filestream 字节数组
-     * @param fileType 文件种类（enum）
-     * @return 文件路径
-     */
-    public String writeFile(byte[] filestream, DocType fileType){
-        long length=filestream.length;
-        int itr=findBest(length);
-
-        long space=dirSpace.get(itr)-length;
-        dirSpace.set(itr,space);
-
-        long num=fileNum.get(itr)-1;
-        fileNum.set(itr,num);
-
-        File file=dirs.get(itr);
-
-        String path=file.getAbsolutePath();
-        try {
-            OutputStream os = new FileOutputStream(path + "\\" + fileNum.get(itr) + "." + fileType.toString());
-            InputStream is = new ByteArrayInputStream(filestream);
-            byte[] buffer = new byte[1024];
-            int len = 0;
-            while ((len = is.read(buffer)) != -1) {
-                os.write(buffer, 0, len);
-            }
-            return path + fileNum.get(itr) + "." + fileType.toString();
-        }catch (IOException ioe) {
-            ioe.printStackTrace();
-            return null;
-        }
+        return filePath;
     }
 
     /**
      * @param volume 文件长度
      * @return 最佳文件夹的index
      */
-    private int findBest(long volume){
+    private synchronized int findBest(long volume){
         boolean big=false;
         boolean small=false;
 
@@ -193,7 +142,7 @@ public class Storage implements StorageService{
      * @param volume 文件长度
      * @return 最佳文件夹的index
      */
-    private synchronized int getWinner(boolean big,boolean small,long volume){
+    private int getWinner(boolean big,boolean small,long volume){
         int winner=-1;
         double mark=0.0;
 
@@ -270,5 +219,16 @@ public class Storage implements StorageService{
         dirs.add(temp);
         dirSpace.add(FIRST_MAX_DIR_SPACE);
         fileNum.add(FIRST_MAX_NUM_OF_FILE);
+    }
+
+    private synchronized void decreaseSpace(int itr,long volume){
+        long space=dirSpace.get(itr)-volume;
+        dirSpace.set(itr,space);
+    }
+
+    private synchronized long decreaseFile(int itr){
+        long num=fileNum.get(itr)-1;
+        fileNum.set(itr,num);
+        return num+1;
     }
 }

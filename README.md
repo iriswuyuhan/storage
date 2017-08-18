@@ -1,2 +1,3 @@
 #使用前请先更改config.properties中的路径，和PropertyReader中的路径，并根据需要更改其它数据
+#createFile方法只负责创建相应的文件夹及文件，并返回路径，并不负责具体的写入和读出
 #具体使用方法参见Main.java

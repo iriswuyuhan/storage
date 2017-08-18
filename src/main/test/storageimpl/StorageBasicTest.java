@@ -3,13 +3,12 @@ package storageimpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import storageexception.MyException;
 import util.DocType;
+import util.MyErrorCode;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Random;
 
 public class StorageBasicTest {
     private Storage storage;
@@ -17,22 +16,6 @@ public class StorageBasicTest {
     @Before
     public void setUp() throws Exception {
         storage=Storage.getInstance();
-    }
-
-    @Test
-    public void writeFile1() throws Exception {
-        byte a=49;
-
-        long startTime=System.currentTimeMillis();
-        Random r=new Random();
-        for(int i=0;i<10000;i++){
-            int length=r.nextInt(1024*1024*2);
-            byte[] file=new byte[length];
-            Arrays.fill(file,a);
-            storage.writeFile(file,DocType.txt);
-        }
-        long endTime=System.currentTimeMillis();
-        System.out.println("写入10000个文件耗时："+(endTime-startTime)+"ms");
     }
 
     @Test
@@ -53,32 +36,12 @@ public class StorageBasicTest {
             }
 
             if (offset != filestream.length) {
-                throw new IOException("Could not completely read file " + file.getName());
+                throw new MyException(MyErrorCode.WRITEFILETOOBIG);
             }
 
             fis.close();
-            storage.writeFile(filestream, DocType.valueOf(type));
+            storage.createFile(size, DocType.valueOf(type));
         }
-    }
-
-    @Test
-    public void getFile1() throws Exception {
-        String basicPath="E:\\DIR_";
-        Random r=new Random();
-        long total=0;
-        int itr=0;
-        for(int i=0;i<100;i++){
-            itr=r.nextInt(20);
-            File[] files=Storage.dirs.get(itr).listFiles();
-            itr=r.nextInt(files.length);
-            String path=files[itr].getAbsolutePath();
-            long start=System.currentTimeMillis();
-            storage.getFile(path);
-            long end=System.currentTimeMillis();
-            total+=end-start;
-        }
-        double average=total/100.0;
-        System.out.println("spend "+average+"ms reading 100 files");
     }
 
     @After
