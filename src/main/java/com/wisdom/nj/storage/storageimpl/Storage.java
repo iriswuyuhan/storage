@@ -1,20 +1,24 @@
-package storageimpl;
+package com.wisdom.nj.storage.storageimpl;
 
-import storageexception.MyException;
-import storageservice.StorageService;
-import util.DocType;
-import util.MyErrorCode;
-import util.PropertyReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.wisdom.nj.storage.storageexception.MyException;
+import com.wisdom.nj.storage.storageservice.StorageService;
+import com.wisdom.nj.storage.util.DocType;
+import com.wisdom.nj.storage.util.MyErrorCode;
+import com.wisdom.nj.storage.util.PropertyReader;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 实现文件存储
+ * 找到文件最佳路径
  * @author wuyuhan
  */
 public class Storage implements StorageService{
+    private static final Logger logger = LoggerFactory.getLogger(Storage.class);
+
     private static Storage storage;
 
     private static int BASIC_NUM_OF_DIRECTORIES;
@@ -73,13 +77,14 @@ public class Storage implements StorageService{
         return storage;
     }
 
-    /**
-     * @param volume 文件大小
-     * @param fileType 文件种类（enum）
-     * @return 文件路径
-     */
     public String createFile(long volume, DocType fileType){
-        int itr=findBest(volume);
+        int itr = 0;
+        try {
+            itr = findBest(volume);
+        } catch (MyException me) {
+            logger.error(me.getMessage(), me);
+            return null;
+        }
 
         decreaseSpace(itr,volume);
 
@@ -99,20 +104,17 @@ public class Storage implements StorageService{
                 throw new MyException(MyErrorCode.FILEEXISTS);
             }
         }catch (IOException ioe){
-            ioe.printStackTrace();
+            logger.error(ioe.getMessage(), ioe);
             return null;
         }catch (MyException me){
-            me.printStackTrace();
+            logger.error(me.getMessage(), me);
             return null;
         }
 
         return filePath;
     }
 
-    /**
-     * @param volume 文件长度
-     * @return 最佳文件夹的index
-     */
+    //找到最佳文件夹
     private synchronized int findBest(long volume){
         boolean big=false;
         boolean small=false;
@@ -125,23 +127,18 @@ public class Storage implements StorageService{
         }
 
         int winner=getWinner(big,small,volume);
-        if(winner<0){
+        if (winner < 0) {//若不存在最佳文件夹，则需要新建文件夹
             initial();
             winner=getWinner(big,small,volume);
         }
-        if(winner<0){
+        if (winner < 0) {//若第二次仍无法匹配则说明文件过大
             throw new MyException(MyErrorCode.WRITEFILETOOBIG);
         }
 
         return winner;
     }
 
-    /**
-     * @param big 是否过大
-     * @param small 是否过小
-     * @param volume 文件长度
-     * @return 最佳文件夹的index
-     */
+    //获取得分最高的文件夹
     private int getWinner(boolean big,boolean small,long volume){
         int winner=-1;
         double mark=0.0;
@@ -159,12 +156,7 @@ public class Storage implements StorageService{
         return winner;
     }
 
-    /**
-     * @param big 是否过大
-     * @param small 是否过小
-     * @param i 某文件夹的index
-     * @return 某文件夹的空间评分
-     */
+    //获取文件夹的空间评分
     private double getSpaceMark(boolean big,boolean small,int i){
         if(big){
             return (a-0.3)*dirSpace.get(i)/(double)FIRST_MAX_NUM_OF_FILE;
@@ -177,12 +169,7 @@ public class Storage implements StorageService{
         }
     }
 
-    /**
-     * @param big 是否过大
-     * @param small 是否过小
-     * @param i 某文件夹的index
-     * @return 某文件夹的文件数评分
-     */
+    //获取文件夹的文件数评分
     private double getNumMark(boolean big,boolean small,int i){
         if(big){
             return (b+0.3)*(FIRST_MAX_NUM_OF_FILE-fileNum.get(i));
@@ -195,9 +182,7 @@ public class Storage implements StorageService{
         }
     }
 
-    /**
-     * 当前文件夹全部填满时新建一定数量的文件夹
-     */
+    //当文件夹不能满足现有文件的存储需要时，新建文件夹
     private void initial(){
         this.index+=BASIC_NUM_OF_DIRECTORIES;
         for(int i=index;i<index+BASIC_NUM_OF_DIRECTORIES;i++){
@@ -206,10 +191,7 @@ public class Storage implements StorageService{
         this.numOfDirectories+=BASIC_NUM_OF_DIRECTORIES;
     }
 
-    /**
-     * 创建文件夹
-     * @param i 某文件夹的index
-     */
+    //新建文件夹
     private static void createDir(int i){
         File temp=new File(rootPath+"DIR_"+i);
         if(!temp.exists()){
@@ -221,11 +203,13 @@ public class Storage implements StorageService{
         fileNum.add(FIRST_MAX_NUM_OF_FILE);
     }
 
-    private synchronized void decreaseSpace(int itr,long volume){
+    //减少文件夹空间
+    private synchronized void decreaseSpace(int itr, long volume) {
         long space=dirSpace.get(itr)-volume;
         dirSpace.set(itr,space);
     }
 
+    //减少文件夹剩余可存储的文件数
     private synchronized long decreaseFile(int itr){
         long num=fileNum.get(itr)-1;
         fileNum.set(itr,num);

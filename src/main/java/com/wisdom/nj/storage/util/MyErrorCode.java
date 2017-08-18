@@ -1,4 +1,4 @@
-package util;
+package com.wisdom.nj.storage.util;
 
 public enum MyErrorCode {
     WRITEFILETOOBIG("WRITE01","文件过大，无法写入"),
