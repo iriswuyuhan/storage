@@ -21,25 +21,27 @@ public class Storage implements StorageService{
 
     private static Storage storage;
 
-    private static int BASIC_NUM_OF_DIRECTORIES;
-    private static long FIRST_MAX_DIR_SPACE;//2^32-1=4294967295
-    private static long FIRST_MAX_NUM_OF_FILE;//2^16-1=65535
-
-    private static String rootPath;
-
+    /*以下成员变量记录每个文件夹的基本信息*/
     static List<File> dirs=new ArrayList<File>();
-
     private static List<Long> dirSpace;
     private static List<Long> fileNum;
 
-    private int numOfDirectories;//在转型时可能会用到
-    private int index;
+    /*以下成员变量基于storage.properties配置，用“描述：映射”进行注释*/
+    private static int BASIC_NUM_OF_DIRECTORIES;//基本文件夹数量：basic_num_of_dirs
+    private static long FIRST_MAX_DIR_SPACE;//文件夹最大空间：max_space
+    private static long FIRST_MAX_NUM_OF_FILE;//文件夹最大文件数量：max_num
 
-    private double a;
-    private double b;
+    private static String rootPath;//存储文件夹的根文件夹：root_path
 
-    private long bigLimit;
-    private long smallLimit;
+    private double a;//空间权重：space_weight
+    private double b;//文件数权重：num_weight
+
+    private long bigLimit;//大文件界限：big_limit
+    private long smallLimit;//小文件界限：small_limit
+
+    /*以下成员变量描述程序运行中的信息*/
+    private int numOfDirectories;//共有多少文件夹
+    private int index;//从哪个文件夹开始遍历
 
     private Storage(){
         PropertyReader pr=PropertyReader.getInstance();
@@ -96,6 +98,7 @@ public class Storage implements StorageService{
 
         File file=new File(filePath);
 
+        //若出现异常则返回null
         try{
             if(!file.exists()){
                 file.createNewFile();
